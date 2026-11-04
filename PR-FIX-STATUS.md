@@ -6,6 +6,26 @@ All 18 open PRs were checked independently. Each branch passed its full test sui
 
 Thirteen branches contain prepared changes. Five preserve the existing contributor changes after validation. Registry corrections and the GaugeDB/DB Studio changes are based on current upstream main; the other follow-ups retain their contributor-branch base.
 
+## Submitted draft pull requests
+
+These requests have been opened for review. The original requests remain open; no changes have been merged or deployed.
+
+| Original marketplace PR | Submitted draft | Destination |
+| --- | --- | --- |
+| [#10894](https://github.com/omacom/omarchy-plugin-marketplace/pull/10894) | [Open draft](https://github.com/omacom/omarchy-plugin-marketplace/pull/13822) | `omacom/omarchy-plugin-marketplace` → `main` |
+| [#11100](https://github.com/omacom/omarchy-plugin-marketplace/pull/11100) | [Open draft](https://github.com/omacom/omarchy-plugin-marketplace/pull/13823) | `omacom/omarchy-plugin-marketplace` → `main` |
+| [#11858](https://github.com/omacom/omarchy-plugin-marketplace/pull/11858) | [Open draft](https://github.com/omacom/omarchy-plugin-marketplace/pull/13824) | `omacom/omarchy-plugin-marketplace` → `main` |
+| [#12653](https://github.com/omacom/omarchy-plugin-marketplace/pull/12653) | [Open draft](https://github.com/omacom/omarchy-plugin-marketplace/pull/13825) | `omacom/omarchy-plugin-marketplace` → `main` |
+| [#13074](https://github.com/omacom/omarchy-plugin-marketplace/pull/13074) | [Open draft](https://github.com/dagelf/omarchy-plugin-marketplace/pull/1) | `dagelf/omarchy-plugin-marketplace` → `plugin-archive-guide` |
+| [#13359](https://github.com/omacom/omarchy-plugin-marketplace/pull/13359) | [Open draft](https://github.com/silversword411/omarchy-plugin-marketplace/pull/1) | `silversword411/omarchy-plugin-marketplace` → `feat/search-bar-help` |
+| [#13496](https://github.com/omacom/omarchy-plugin-marketplace/pull/13496) | [Open draft](https://github.com/omacom/omarchy-plugin-marketplace/pull/13826) | `omacom/omarchy-plugin-marketplace` → `main` |
+| [#13547](https://github.com/omacom/omarchy-plugin-marketplace/pull/13547) | [Open draft](https://github.com/OnurByte/omarchy-plugin-marketplace/pull/1) | `OnurByte/omarchy-plugin-marketplace` → `codex/fit-wide-preview` |
+| [#3062](https://github.com/omacom/omarchy-plugin-marketplace/pull/3062) | [Open draft](https://github.com/JoeJoeflyn/omarchy-plugin-marketplace/pull/1) | `JoeJoeflyn/omarchy-plugin-marketplace` → `feature/page-input` |
+| [#5697](https://github.com/omacom/omarchy-plugin-marketplace/pull/5697) | [Open draft](https://github.com/omacom/omarchy-plugin-marketplace/pull/13827) | `omacom/omarchy-plugin-marketplace` → `main` |
+| [#6403](https://github.com/omacom/omarchy-plugin-marketplace/pull/6403) | [Open draft](https://github.com/riccardolanza05/omarchy-plugin-marketplace/pull/1) | `riccardolanza05/omarchy-plugin-marketplace` → `fix/restart-shell-for-clonedfrom-installs` |
+| [#6513](https://github.com/omacom/omarchy-plugin-marketplace/pull/6513) | [Open draft](https://github.com/itsgg/omarchy-plugin-marketplace/pull/1) | `itsgg/omarchy-plugin-marketplace` → `fix/pip-install-mention-without-a-package` |
+| [#8905](https://github.com/omacom/omarchy-plugin-marketplace/pull/8905) | [Open draft](https://github.com/omacom/omarchy-plugin-marketplace/pull/13828) | `omacom/omarchy-plugin-marketplace` → `main` |
+
 ## Results
 
 | PR | Result | Tests passed | Prepared branch |
