@@ -696,6 +696,54 @@ test("standard installation verification removes only an eligible manual root ov
   assert.match(buildVerificationReport(result), /manual installation override was removed/);
 });
 
+test("standard installation promotion retains the restart for a cloned service", async () => {
+  const manualSource = source({
+    plugins: {
+      "example.plugin": {
+        category: "System",
+        tags: ["system"],
+        manifestPath: "manifest.json",
+        installation: { mode: "manual", note: "Requires extra setup." },
+      },
+    },
+  });
+  const manualCatalog = catalog();
+  manualCatalog.plugins[0] = {
+    ...manualCatalog.plugins[0],
+    repositoryLayout: "root-plugin",
+    upstreamCheckStatus: "passed",
+    installAvailable: false,
+    installCommand: "",
+    installNote: "Requires extra setup.",
+    status: "Manual setup",
+    clonedFrom: "omarchy.idle",
+  };
+  await assert.rejects(
+    analyzeListedPluginVerification({
+      body: standardInstallationRequestBody(),
+      registry: { sources: [manualSource] },
+      catalog: manualCatalog,
+      runBaseline: async () => assert.fail("unauthorized standard installation must fail before scanning"),
+    }),
+    (error) => error.code === "verification-standard-installation-authorization-missing",
+  );
+  const result = await analyzeListedPluginVerification({
+    body: standardInstallationRequestBody(),
+    registry: { sources: [manualSource] },
+    catalog: manualCatalog,
+    runBaseline: async () => baseline(),
+    standardInstallationApproval: standardInstallationApproval(),
+  });
+  assert.equal(result.status, "verified");
+  assert.equal(result.installationChanged, true);
+  assert.equal(result.registry.sources[0].plugins["example.plugin"].installation, undefined);
+  assert.equal(result.catalog.plugins[0].installAvailable, true);
+  assert.equal(result.catalog.plugins[0].installCommand, "omarchy plugin add https://github.com/example/plugin.git --enable && omarchy restart shell");
+  assert.equal(result.catalog.plugins[0].status, "Available");
+  assert.match(result.catalog.plugins[0].installNote, /clones the current upstream repository/);
+  assert.match(buildVerificationReport(result), /manual installation override was removed/);
+});
+
 test("standard installation does not rewrite a duplicate ID from another repository", async () => {
   const manualSource = source({
     plugins: {

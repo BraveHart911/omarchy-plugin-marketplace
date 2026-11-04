@@ -44,7 +44,7 @@ export const catalogRefreshGraphqlBudgetReserve = 50;
 export const catalogRefreshGraphqlPointsPerBatchReserve = 10;
 const catalogRefreshGraphqlAttempts = 3;
 export const catalogRefreshRestBudgetReserve = 500;
-export const catalogSourceValidationVersion = 1;
+export const catalogSourceValidationVersion = 2;
 const accents = ["lime", "amber", "coral", "cyan", "violet", "rose"];
 const supportedKinds = new Set(["bar", "bar-widget", "menu", "overlay", "panel", "service"]);
 const supportedPreviewFormats = new Set(["png", "jpeg", "webp", "avif", "heif"]);
@@ -1324,6 +1324,7 @@ function repositoryGitUrl(repo) {
 }
 
 export function communityInstall(source, manifestPath, overrides = {}, clonedFrom = "") {
+  const swapsFirstPartyService = typeof clonedFrom === "string" && clonedFrom.trim() !== "";
   const installation = overrides.installation;
   if (installation !== undefined) {
     if (
@@ -1343,10 +1344,10 @@ export function communityInstall(source, manifestPath, overrides = {}, clonedFro
       installAvailable: false,
       installCommand: "",
       installNote: installation.note,
+      ...(swapsFirstPartyService ? { clonedFrom } : {}),
     };
   }
   if (manifestPath === "manifest.json") {
-    const swapsFirstPartyService = typeof clonedFrom === "string" && clonedFrom.trim() !== "";
     return {
       repositoryLayout: "root-plugin",
       installAvailable: true,

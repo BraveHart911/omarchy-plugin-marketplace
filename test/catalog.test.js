@@ -351,7 +351,7 @@ test("root plugins that clone a first-party service ask for a shell restart", ()
   assert.equal(swapped.clonedFrom, "omarchy.idle");
 });
 
-test("a manual installation override is unaffected by clonedFrom", () => {
+test("a manual override retains clonedFrom for later standard-installation approval", () => {
   const source = { repo: "https://github.com/example/native-plugin" };
   const note = "This plugin requires a matching native helper.";
   assert.deepEqual(
@@ -361,6 +361,7 @@ test("a manual installation override is unaffected by clonedFrom", () => {
       installAvailable: false,
       installCommand: "",
       installNote: note,
+      clonedFrom: "omarchy.idle",
     },
   );
 });
