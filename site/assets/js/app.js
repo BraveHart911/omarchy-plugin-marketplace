@@ -25,14 +25,14 @@ import {
   showToast,
   updateEngagementSummary,
   updatePluginHeart
-} from "./shared.js?v=20260827-01";
+} from "./shared.js?v=20261103-01";
 import {
   engagementApiBaseUrl,
   hasPluginHeart,
   loadEngagementStats,
   recordPluginCopy,
   recordPluginHeart,
-} from "./engagement.js?v=20260827-01";
+} from "./engagement.js?v=20261103-01";
 import {
   appendSearchState,
   committedTermsFromDraft,
@@ -59,7 +59,7 @@ import {
   searchTermInputValue,
   searchTermKey,
   selectSearchCompletions,
-} from "./search.js?v=20260827-01";
+} from "./search.js?v=20261103-01";
 
 const pluginsPerPage = 9;
 const hiddenCardTags = new Set([
@@ -917,6 +917,7 @@ function renderPagination(totalItems, pageState) {
   previousPageLabel.textContent = pageState.hasPrevious ? `Page ${pageState.page - 1}` : "First page";
   nextPageLabel.textContent = pageState.hasNext ? `Page ${pageState.page + 1}` : "Last page";
   pageTotal.textContent = pageState.totalPages;
+  pageInput.style.width = `${Math.max(3, String(pageState.totalPages).length)}ch`;
   if (document.activeElement !== pageInput) pageInput.value = pageState.page;
   previousPage.setAttribute("aria-label", pageState.hasPrevious
     ? `Go to plugin page ${pageState.page - 1}`
@@ -1514,9 +1515,10 @@ async function init() {
   nextPage.addEventListener("click", () => {
     if (!nextPage.disabled) changePage(1);
   });
-  pageInput.addEventListener("change", () => {
-    const page = Number.parseInt(pageInput.value, 10);
-    if (!Number.isFinite(page) || page < 1) { pageInput.value = state.page; return; }
+  const jumpToPage = () => {
+    const value = pageInput.value.trim();
+    const page = /^\d+$/.test(value) ? Number(value) : Number.NaN;
+    if (!Number.isSafeInteger(page) || page < 1) { pageInput.value = state.page; return; }
     const visible = filteredPlugins();
     const maxPage = Math.max(1, Math.ceil(visible.length / pluginsPerPage));
     const clamped = Math.min(page, maxPage);
@@ -1527,6 +1529,12 @@ async function init() {
     firstResult?.focus({ preventScroll: true });
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     grid.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+  };
+  pageInput.addEventListener("change", jumpToPage);
+  pageInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    jumpToPage();
   });
   viewButton.addEventListener("click", () => {
     const previousScrollTop = window.scrollY;
