@@ -19,13 +19,23 @@ export async function validatePackage(repository, revision = "HEAD") {
     const archive = join(temporary, "package.tar");
     const destination = join(temporary, "files");
     await mkdir(destination);
-    git("archive", "--format=tar", `--output=${archive}`, commitSha);
+    // A clean bare repository excludes worktree and .git/info/attributes overrides.
+    const isolated = join(temporary, "repository.git");
+    const isolatedGit = (...args) => execFileSync("git", [
+      "-c", "core.attributesFile=/dev/null", "-C", isolated, ...args,
+    ], { env: { ...process.env, GIT_ATTR_NOSYSTEM: "1" }, stdio: "pipe" });
+    execFileSync("git", ["init", "--bare", "--template=", "--quiet", isolated]);
+    isolatedGit("fetch", "--quiet", "--no-tags", "--", source, commitSha);
+    isolatedGit("archive", "--format=tar", `--output=${archive}`, commitSha);
     execFileSync("tar", ["-xf", archive, "-C", destination]);
 
     const tree = [];
     async function collect(directory = "") {
       for (const name of (await readdir(join(destination, directory))).sort()) {
         const path = directory ? `${directory}/${name}` : name;
+        if (path === ".omarchy-package.json") {
+          throw new Error(".omarchy-package.json is reserved for Omarchy's installer");
+        }
         const stat = await lstat(join(destination, path));
         if (stat.isSymbolicLink()) throw new Error(`Package contains a symlink: ${path}`);
         if (stat.isDirectory()) await collect(path);
@@ -34,9 +44,6 @@ export async function validatePackage(repository, revision = "HEAD") {
       }
     }
     await collect();
-    if (tree.some((entry) => entry.path === ".omarchy-package.json" || entry.path.startsWith(".omarchy-package.json/"))) {
-      throw new Error(".omarchy-package.json is reserved for Omarchy's installer");
-    }
     const context = { repository: { slug: source }, tree, treeByPath: new Map(tree.map((entry) => [entry.path, entry])) };
     validateRepositoryDocs(context);
     const manifest = JSON.parse(await readFile(join(destination, "manifest.json"), "utf8"));

@@ -40,6 +40,16 @@ test("package validation uses committed export rules and preserves source files 
   assert.ok(result.bytes > 0);
   assert.equal(git("show", `${exported}:tests/fixture`), "Development only", "excluded source remains available for review");
 
+  await writeFile(join(directory, ".git", "info", "attributes"), "/tests -export-ignore\n");
+  assert.deepEqual((await validatePackage(directory, exported)).files, result.files,
+    "local info attributes cannot override committed export rules");
+  await rm(join(directory, ".git", "info", "attributes"));
+
+  git("update-index", "--add", "--cacheinfo", `160000,${exported},.omarchy-package.json`);
+  git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "Reserved submodule");
+  await assert.rejects(validatePackage(directory, git("rev-parse", "HEAD")), /reserved/);
+  git("rm", "--cached", ".omarchy-package.json");
+
   for (const required of ["Widget.qml", "manifest.json", "README.md", "LICENSE"]) {
     await writeFile(join(directory, ".gitattributes"), `/${required} export-ignore\n`);
     const broken = commit();
