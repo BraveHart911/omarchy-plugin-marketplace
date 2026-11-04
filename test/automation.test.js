@@ -70,6 +70,7 @@ import {
   matchesCommittedSearchTerm,
   matchesDirectSearch,
   matchesDraftSearchTerm,
+  mergeSearchTerms,
   matchesShortSearch,
   matchesSearchSelection,
   pluginSearchContext,
@@ -1184,6 +1185,16 @@ test("sort terms mirror the select without filtering or reaching the URL", () =>
   assert.equal(searchSortTerm([{ type: "sort", value: "stars" }], "tag:bar sort:name"), "name");
   assert.equal(searchSortTerm([{ type: "sort", value: "stars" }], "tag:bar"), "stars");
   assert.equal(searchSortTerm([], "tag:bar"), "");
+  const chips = [{ type: "sort", value: "stars" }, { type: "tag", value: "bar" }, { type: "sort", value: "name" }];
+  const recommitted = mergeSearchTerms(chips, parseSearchDraft("sort:stars"));
+  assert.deepEqual(recommitted.terms, [{ type: "tag", value: "bar" }, { type: "sort", value: "stars" }]);
+  assert.deepEqual(recommitted.added, [{ type: "sort", value: "stars" }]);
+  assert.equal(searchSortTerm(recommitted.terms, ""), "stars");
+  assert.deepEqual(mergeSearchTerms(chips, parseSearchDraft("sort:stars tag:bar sort:updated")).terms, [
+    { type: "tag", value: "bar" },
+    { type: "sort", value: "updated" },
+  ]);
+  assert.deepEqual(mergeSearchTerms(chips, parseSearchDraft("tag:bar")), { terms: chips, added: [] });
   const context = pluginSearchContext({ id: "example.plugin", name: "Example", repo: "https://github.com/example/plugin", tags: ["bar"] });
   const terms = parseSearchDraft("sort:name tag:bar");
   assert.equal(matchesSearchSelection(context, { terms }), true);
@@ -1552,7 +1563,7 @@ test("entry modules and their shared dependency use one cache key", async () => 
   };
   // Only changed assets get a new cache key. The browse entry module changed
   // alone, so it is ahead of the coupled modules, which still share one key.
-  assert.equal(files.index.match(/app\.js\?v=([^"']+)/)?.[1], "20261030-01");
+  assert.equal(files.index.match(/app\.js\?v=([^"']+)/)?.[1], "20261103-01");
   const keys = [
     files.plugin.match(/plugin\.js\?v=([^"']+)/)?.[1],
     files.publish.match(/publish\.js\?v=([^"']+)/)?.[1],
@@ -1571,15 +1582,15 @@ test("entry modules and their shared dependency use one cache key", async () => 
   ];
   assert.ok(keys.every(Boolean));
   assert.equal(new Set(keys).size, 1);
-  assert.equal(keys[0], "20261029-01");
-  assert.equal(files.explore.match(/explore\.js\?v=([^"']+)/)?.[1], "20261029-01");
-  assert.equal(files.exploreJs.match(/explore-search\.js\?v=([^"']+)/)?.[1], "20261029-01");
+  assert.equal(keys[0], "20261103-01");
+  assert.equal(files.explore.match(/explore\.js\?v=([^"']+)/)?.[1], "20261103-01");
+  assert.equal(files.exploreJs.match(/explore-search\.js\?v=([^"']+)/)?.[1], "20261103-01");
   assert.equal(files.exploreJs.match(/growth-range\.js\?v=([^"']+)/)?.[1], "20260828-18");
   const styleKeys = [files.index, files.plugin, files.publish, files.develop, files.explore]
     .map((html) => html.match(/style\.css\?v=([^"']+)/)?.[1]);
   assert.ok(styleKeys.every(Boolean));
   assert.equal(new Set(styleKeys).size, 1);
-  assert.equal(styleKeys[0], "20261030-01");
+  assert.equal(styleKeys[0], "20261103-01");
   assert.match(files.sharedJs, /from "\.\/themes\.js\?v=20260920-05"/);
   const faviconKeys = [files.index, files.plugin, files.publish, files.develop, files.explore]
     .map((html) => html.match(/favicon\.svg\?v=([^"']+)/)?.[1]);
@@ -4427,4 +4438,11 @@ test("generated source plugins retain manifest paths and local preview assets", 
   assert.equal(omni.manifestPath, "omni/manifest.json");
   assert.match(lacuna.previewImage, /^assets\/img\/plugins\/.*-detail\.webp$/);
   assert.match(lacuna.previewThumbnail, /^assets\/img\/plugins\/.*-card\.webp$/);
+});
+
+test("search help follows scrolling and documents time-based sorts", async () => {
+  const app = await readFile(new URL("../site/assets/js/app.js", import.meta.url), "utf8");
+  const html = await readFile(new URL("../site/index.html", import.meta.url), "utf8");
+  assert.match(app, /window\.addEventListener\("scroll", updateSearchHelpPlacement, \{ passive: true \}\)/);
+  assert.match(html, /<code>sort:added<\/code>also updated/);
 });

@@ -2,7 +2,7 @@ import {
   activityTime,
   listingTime,
   matchesVerificationStatus,
-} from "./shared.js?v=20261029-01";
+} from "./shared.js?v=20261103-01";
 
 export function fuzzyScore(query, candidate) {
   const needle = foldSearchTerm(query);
@@ -222,6 +222,28 @@ export function searchSortTerm(terms = [], draft = "") {
     .map((term) => createSearchTerm(term?.type, term?.value))
     .filter((term) => term?.type === "sort");
   return sortTerms.at(-1)?.value || "";
+}
+
+/**
+ * Merge drafted terms into the committed chips, skipping terms already
+ * present. A drafted `sort:` term is the reader's latest choice, so only the
+ * last one is kept and it replaces every earlier sort chip.
+ */
+export function mergeSearchTerms(terms = [], draftedTerms = []) {
+  const drafted = draftedTerms
+    .map((term) => createSearchTerm(term?.type, term?.value))
+    .filter(Boolean);
+  const latestSort = drafted.findLast((term) => term.type === "sort");
+  const kept = latestSort ? terms.filter((term) => term?.type !== "sort") : [...terms];
+  const existing = new Set(kept.map(searchTermKey));
+  const added = [];
+  drafted.forEach((term) => {
+    const key = searchTermKey(term);
+    if ((term.type === "sort" && term !== latestSort) || !key || existing.has(key)) return;
+    existing.add(key);
+    added.push(term);
+  });
+  return { terms: [...kept, ...added], added };
 }
 
 export function searchTermKey(term) {
