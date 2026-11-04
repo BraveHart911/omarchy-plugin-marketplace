@@ -624,6 +624,12 @@ test("pip install with nothing after it is a mention, not package management", (
   }
   for (const command of [
     "pip install openwakeword",
+    "pip install 'requests'",
+    'pip install "requests"',
+    'pip install "$PACKAGE"',
+    "pip install ${PACKAGE}",
+    "pip install ~/packages/example.whl",
+    "pip install \\\n  requests",
     "pip3 install --user example",
     "pipx install example-tool",
     "${VENV}/bin/pip install openwakeword",
